@@ -11,11 +11,34 @@ namespace Woof.ServiceEx.Wcf {
 
         #region Content-Type constants
 
+        /// <summary>
+        /// JSON MIME type.
+        /// </summary>
         public const string Json = "application/json";
+
+        /// <summary>
+        /// XML MIME type.
+        /// </summary>
         public const string Xml = "application/xml";
+
+        /// <summary>
+        /// Plain text MIME type.
+        /// </summary>
         public const string Text = "text/plain";
+
+        /// <summary>
+        /// HTML MIME type.
+        /// </summary>
         public const string Html = "text/html";
+
+        /// <summary>
+        /// HTML form MIME type.
+        /// </summary>
         public const string Form = "application/x-www-form-urlencoded";
+
+        /// <summary>
+        /// UTF-8 charset part.
+        /// </summary>
         public const string Charset = "; charset=UTF-8";
 
         #endregion

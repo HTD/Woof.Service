@@ -18,8 +18,19 @@ namespace Woof.ServiceEx.Wcf {
     [AttributeUsage(AttributeTargets.Method)]
     public class HtmlFormHandler : Attribute, IDispatchMessageInspector, IOperationBehavior {
 
+        /// <summary>
+        /// A key to the property of form data.
+        /// </summary>
         public const string HtmlFormDataPropertyKey = "FormData";
+
+        /// <summary>
+        /// HttpOperationName header name.
+        /// </summary>
         private const string HttpOperationName = "HttpOperationName";
+
+        /// <summary>
+        /// Content-Type header name.
+        /// </summary>
         private const string ContentTypeHeader = "Content-Type";
 
         /// <summary>
@@ -67,9 +78,19 @@ namespace Woof.ServiceEx.Wcf {
             if (correlationState is NameValueCollection) WebOperationContext.Current.OutgoingResponse.ContentType = ContractContentTypes.Html + ContractContentTypes.Charset;
         }
 
+        /// <summary>
+        /// Void interface implementation.
+        /// </summary>
+        /// <param name="operationDescription"></param>
+        /// <param name="bindingParameters"></param>
         public void AddBindingParameters(OperationDescription operationDescription, BindingParameterCollection bindingParameters) {
         }
 
+        /// <summary>
+        /// Void interface implementation.
+        /// </summary>
+        /// <param name="operationDescription"></param>
+        /// <param name="clientOperation"></param>
         public void ApplyClientBehavior(OperationDescription operationDescription, ClientOperation clientOperation) {
         }
 
@@ -83,6 +104,10 @@ namespace Woof.ServiceEx.Wcf {
             dispatchOperation.Parent.MessageInspectors.Add(this);
         }
 
+        /// <summary>
+        /// Void interface implementation.
+        /// </summary>
+        /// <param name="operationDescription"></param>
         public void Validate(OperationDescription operationDescription) {
         }
 

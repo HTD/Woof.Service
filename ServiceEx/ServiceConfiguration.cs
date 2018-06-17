@@ -11,22 +11,49 @@ namespace Woof.ServiceEx {
 
         #region Configuration properties
 
+        /// <summary>
+        /// Gets or sets company property of the service metadata.
+        /// </summary>
         public string Company { get; set; }
 
+        /// <summary>
+        /// Gets or sets the service name (identifier) property of the service metadata.
+        /// </summary>
         public string ServiceName { get; set; }
 
+        /// <summary>
+        /// Gets or sets the service version string.
+        /// </summary>
         public string Version { get; set; }
 
+        /// <summary>
+        /// Gets or sets the service user name.
+        /// </summary>
         public string ServiceUser { get; set; }
 
+        /// <summary>
+        /// Gets or sets the service user password.
+        /// </summary>
         public string ServicePassword { get; set; }
 
+        /// <summary>
+        /// Gets or sets the service display name.
+        /// </summary>
         public string DisplayName { get; set; }
 
+        /// <summary>
+        /// Gets or sets the service description.
+        /// </summary>
         public string Description { get; set; }
 
+        /// <summary>
+        /// Gets or sets the action executed on service start.
+        /// </summary>
         public Action StartAction { get; set; }
 
+        /// <summary>
+        /// Gets or sets the action executed on service stop.
+        /// </summary>
         public Action StopAction { get; set; }
 
         #endregion

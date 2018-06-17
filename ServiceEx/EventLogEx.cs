@@ -26,6 +26,7 @@ namespace Woof.ServiceEx {
         /// <summary>
         /// Writes event log with "spam" protection.
         /// </summary>
+        /// <param name="log">This event log.</param>
         /// <param name="ev">Event object.</param>
         /// <param name="data">Optional data to format message text.</param>
         public static void WriteEvent(this EventLog log, EventDefinition ev, params object[] data) {
@@ -54,6 +55,7 @@ namespace Woof.ServiceEx {
         /// <summary>
         /// Logs managed exception as event.
         /// </summary>
+        /// <param name="log">This event log.</param>
         /// <param name="x">Exception.</param>
         /// <param name="id">Event identifier, default 3666.</param>
         public static void WriteException(this EventLog log, Exception x, int id = 3666) => log.WriteEvent(new EventDefinition {

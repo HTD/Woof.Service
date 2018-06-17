@@ -15,7 +15,15 @@ namespace Woof.ServiceEx.Wcf {
     [AttributeUsage(AttributeTargets.Method)]
     public class ReturnContentType : Attribute {
 
+        /// <summary>
+        /// Content-type attribute content.
+        /// </summary>
         public readonly string ContentType = null;
+
+        /// <summary>
+        /// Creates <see cref="ReturnContentType"/> attribute with specified content.
+        /// </summary>
+        /// <param name="contentType">Content-type attribute value.</param>
         public ReturnContentType(string contentType = null) => ContentType = contentType;
 
     }
