@@ -5,7 +5,7 @@ using System.ServiceModel.Description;
 using System.ServiceModel.Web;
 
 namespace Woof.ServiceEx.Wcf {
-    
+
     /// <summary>
     /// Special stand-alone, zero-configuration RESTful WebService host
     /// </summary>
@@ -14,21 +14,27 @@ namespace Woof.ServiceEx.Wcf {
 
         /// <summary>
         /// Gets or sets the maximum amount of memory, in bytes, that is allocated for use by the manager of the message buffers that receive messages from the channel.
-        /// The default value is 524,288 (0x80000) bytes.
+        /// The default value is 524288 (0x80000) bytes.
         /// </summary>
         public int MaxBufferSize { get; set; } = 524288;
 
         /// <summary>
         /// Gets or sets the maximum amount of memory, in bytes, that is allocated for use by the manager of the message buffers that receive messages from the channel.
-        /// The default value is 524,288 (0x80000) bytes.
+        /// The default value is 524288 (0x80000) bytes.
         /// </summary>
         public int MaxReceivedMessageSize { get; set; } = 524288;
+
+        /// <summary>
+        /// Gets one or more origins allowed with CORS support behavior defined in the host constructor.
+        /// </summary>
+        public string AllowOrigins { get; }
 
         /// <summary>
         /// Creates new <see cref="WebServiceHost"/> instance.
         /// </summary>
         /// <param name="endpointUri">Endpoint URI.</param>
-        public WebServiceHost(Uri endpointUri) : base(typeof(T), new[] { endpointUri }) { }
+        /// <param name="allowOrigins">One or more origins separated with a semicolon and optional whitespace.</param>
+        public WebServiceHost(Uri endpointUri, string allowOrigins = "*") : base(typeof(T), new[] { endpointUri }) => AllowOrigins = allowOrigins;
 
         /// <summary>
         /// Configures service endpoint and adds special behaviors to it (WebHttp and CorsSupport).
@@ -53,7 +59,7 @@ namespace Woof.ServiceEx.Wcf {
                 new EndpointAddress(BaseAddresses.FirstOrDefault())
             );
             endPoint.EndpointBehaviors.Add(defaultWebHttpBehavior);
-            endPoint.EndpointBehaviors.Add(new CorsSupportBehavior());
+            endPoint.EndpointBehaviors.Add(new CorsSupportBehavior(AllowOrigins));
             endPoint.EndpointBehaviors.Add(new BrowserCompatibilityBehavior());
             AddServiceEndpoint(endPoint);
             base.OnOpening();

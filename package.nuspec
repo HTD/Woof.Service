@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>Woof.Service</id>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <title>Woof.Service</title>
     <authors>Adam Łyskawa</authors>
     <owners>CodeDog Ltd.</owners>
@@ -10,7 +10,7 @@
     <projectUrl>https://github.com/HTD/Woof.Service</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Windows Service / CORS capable WCF service hosting made easy.</description>
-    <releaseNotes>XML documentation completed.</releaseNotes>
+    <releaseNotes>Added CORS support behavior configuration to WebServiceHost constructor.</releaseNotes>
     <copyright>(c)2018 by CodeDog Ltd.</copyright>
     <tags>code codedog dotnet system windows service cors rest wcf</tags>
   </metadata>

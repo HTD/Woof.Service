@@ -10,28 +10,9 @@ using System.ServiceModel.Web;
 namespace Woof.ServiceEx.Wcf {
 
     /// <summary>
-    /// Sets default method output Content-Type if raw stream is returned by the method
+    /// Endpoint behaviour compatible with lame browsers (and other devices) which don't set "Content-Type" and "Accept" header properly.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method)]
-    public class ReturnContentType : Attribute {
-
-        /// <summary>
-        /// Content-type attribute content.
-        /// </summary>
-        public readonly string ContentType = null;
-
-        /// <summary>
-        /// Creates <see cref="ReturnContentType"/> attribute with specified content.
-        /// </summary>
-        /// <param name="contentType">Content-type attribute value.</param>
-        public ReturnContentType(string contentType = null) => ContentType = contentType;
-
-    }
-
-    /// <summary>
-    /// Endpoint behaviour compatible with lame browsers (and other devices) which don't set "Content-Type" and "Accept" header properly
-    /// </summary>
-    class BrowserCompatibilityBehavior : IEndpointBehavior, IDispatchMessageInspector {
+    public class BrowserCompatibilityBehavior : IEndpointBehavior, IDispatchMessageInspector {
 
         /// <summary>
         /// Default content type set in service contract description
@@ -41,7 +22,7 @@ namespace Woof.ServiceEx.Wcf {
         /// <summary>
         /// Content type mapper for incompatible requests from IE LT 10 (if no "Content-Type" or "Accept" headers are set in the request)
         /// </summary>
-        class AutoContentTypeMapper : WebContentTypeMapper {
+        public class AutoContentTypeMapper : WebContentTypeMapper {
 
             /// <summary>
             /// Default content type to match 
@@ -87,7 +68,12 @@ namespace Woof.ServiceEx.Wcf {
             return null;
         }
 
-        public void BeforeSendReply(ref Message reply, object correlationState) {        }
+        /// <summary>
+        /// Empty code to satisfy interface.
+        /// </summary>
+        /// <param name="reply"></param>
+        /// <param name="correlationState"></param>
+        public void BeforeSendReply(ref Message reply, object correlationState) { }
 
         /// <summary>
         /// Binds AutoContentType mapper if default content type is specified in service contract description (IMessageInspector implementation)
@@ -97,7 +83,11 @@ namespace Woof.ServiceEx.Wcf {
         public void AddBindingParameters(ServiceEndpoint endpoint, BindingParameterCollection bindingParameters)
             => (endpoint.Binding as WebHttpBinding).ContentTypeMapper = new AutoContentTypeMapper { DefaultContentType = EndpointDefaultContentType };
         
-
+        /// <summary>
+        /// Empty code to satisfy interface.
+        /// </summary>
+        /// <param name="endpoint"></param>
+        /// <param name="clientRuntime"></param>
         public void ApplyClientBehavior(ServiceEndpoint endpoint, ClientRuntime clientRuntime) { }
 
         /// <summary>
@@ -108,8 +98,30 @@ namespace Woof.ServiceEx.Wcf {
         public void ApplyDispatchBehavior(ServiceEndpoint endpoint, EndpointDispatcher endpointDispatcher)
             => endpointDispatcher.DispatchRuntime.MessageInspectors.Add(this);
         
-
+        /// <summary>
+        /// Empty code to satisfy interface.
+        /// </summary>
+        /// <param name="endpoint"></param>
         public void Validate(ServiceEndpoint endpoint) { }
+
+    }
+
+    /// <summary>
+    /// Sets default method output Content-Type if raw stream is returned by the method
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Method)]
+    public class ReturnContentType : Attribute {
+
+        /// <summary>
+        /// Content-type attribute content.
+        /// </summary>
+        public readonly string ContentType = null;
+
+        /// <summary>
+        /// Creates <see cref="ReturnContentType"/> attribute with specified content.
+        /// </summary>
+        /// <param name="contentType">Content-type attribute value.</param>
+        public ReturnContentType(string contentType = null) => ContentType = contentType;
 
     }
 

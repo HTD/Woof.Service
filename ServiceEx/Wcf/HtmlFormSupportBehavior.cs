@@ -13,7 +13,7 @@ using System.Web;
 namespace Woof.ServiceEx.Wcf {
 
     /// <summary>
-    /// HTML Form handler operation behavior
+    /// HTML Form handler operation behavior.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
     public class HtmlFormHandler : Attribute, IDispatchMessageInspector, IOperationBehavior {

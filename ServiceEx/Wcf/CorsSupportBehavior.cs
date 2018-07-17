@@ -4,20 +4,21 @@ using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.ServiceModel.Description;
 using System.ServiceModel.Dispatcher;
+using System.Text.RegularExpressions;
 
 namespace Woof.ServiceEx.Wcf {
 
     /// <summary>
     /// Makes the endpoint support Cross Origin Resource Sharing
     /// </summary>
-    internal class CorsSupportBehavior : IEndpointBehavior {
+    public class CorsSupportBehavior : IEndpointBehavior {
 
         /// <summary>
         /// Gets or sets allowed origins, default * meaning all origins allowed.
         /// </summary>
-        public string[] AccessControlAllowOrigin { get; set; } = new string[] { "*" };
+        public string[] AccessControlAllowOrigin { get; }
 
-        class PreflightDetected : IExtension<OperationContext> {
+        private class PreflightDetected : IExtension<OperationContext> {
 
             private string _requestedHeaders = null;
 
@@ -36,7 +37,7 @@ namespace Woof.ServiceEx.Wcf {
 
         }
 
-        class CustomOperationInvoker : IOperationInvoker {
+        private class CustomOperationInvoker : IOperationInvoker {
 
             private IOperationInvoker InnerInvoker = null;
 
@@ -64,7 +65,7 @@ namespace Woof.ServiceEx.Wcf {
 
         }
 
-        class CorsMessageInspector : IDispatchMessageInspector {
+        private class CorsMessageInspector : IDispatchMessageInspector {
 
             /// <summary>
             /// If set, the requests will be allowed only for origins specified, otherwise for all
@@ -120,22 +121,50 @@ namespace Woof.ServiceEx.Wcf {
             }
         }
 
+        private CorsMessageInspector MessageInspector { get; } = new CorsMessageInspector();
+
+        /// <summary>
+        /// Creates CORS support behavior for specified one or more origins (separated with semicolon).
+        /// </summary>
+        /// <param name="origins">One or more origins separated with semicolon and optional white space.</param>
+        public CorsSupportBehavior(string origins = "*") => AccessControlAllowOrigin = RxOriginSeparator.Split(origins);
+
+        /// <summary>
+        /// Empty.
+        /// </summary>
+        /// <param name="endpoint"></param>
+        /// <param name="bindingParameters"></param>
         public void AddBindingParameters(ServiceEndpoint endpoint, System.ServiceModel.Channels.BindingParameterCollection bindingParameters) { }
 
+        /// <summary>
+        /// Empty.
+        /// </summary>
+        /// <param name="endpoint"></param>
+        /// <param name="clientRuntime"></param>
         public void ApplyClientBehavior(ServiceEndpoint endpoint, ClientRuntime clientRuntime) { }
 
+        /// <summary>
+        /// Registers CORS message inspector, and an operation invoker for undhandled operations.
+        /// </summary>
+        /// <param name="endpoint">End point.</param>
+        /// <param name="endpointDispatcher">Dispatcher.</param>
         public void ApplyDispatchBehavior(ServiceEndpoint endpoint, EndpointDispatcher endpointDispatcher) {
-            // Register a message inspector, and an operation invoker for undhandled operations
             endpointDispatcher.DispatchRuntime.MessageInspectors.Add(new CorsMessageInspector() { AccessControlAllowOrigin = AccessControlAllowOrigin });
             IOperationInvoker invoker = endpointDispatcher.DispatchRuntime.UnhandledDispatchOperation.Invoker;
             endpointDispatcher.DispatchRuntime.UnhandledDispatchOperation.Invoker = new CustomOperationInvoker(invoker);
         }
 
+        /// <summary>
+        /// Makes sure that the behavior is applied to an end point with WebHttp binding
+        /// </summary>
+        /// <param name="endpoint"></param>
         public void Validate(ServiceEndpoint endpoint) {
-            // Make sure that the behavior is applied to an endpoing with WebHttp binding
             if (!(endpoint.Binding is WebHttpBinding))
                 throw new InvalidOperationException("The CorsSupportBehavior can only be used in WebHttpBinding endpoints");
         }
+
+        private readonly Regex RxOriginSeparator = new Regex(@"\s*;\s*", RegexOptions.Compiled);
+
     }
 
 }
