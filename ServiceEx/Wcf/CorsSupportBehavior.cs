@@ -106,6 +106,7 @@ namespace Woof.ServiceEx.Wcf {
                 // Add allow-origin header to each response message, because client expects it
                 // If AccessControlAllowOrigin is set to allowed origins array the request origin is tested against it
                 string originHeader = httpRequest.Headers["Origin"];
+                
                 string originString = null;
                 if (httpResponse != null) {
                     if (AccessControlAllowOrigin == null || String.IsNullOrEmpty(originHeader) || originHeader == "null") {
@@ -115,7 +116,11 @@ namespace Woof.ServiceEx.Wcf {
                         if (originString == null) {
                             httpResponse.StatusCode = HttpStatusCode.Forbidden;
                             httpResponse.StatusDescription = "Origin not allowed";
-                        } else if (httpResponse != null) httpResponse.Headers.Add("Access-Control-Allow-Origin", originString);
+                        }
+                        else if (httpResponse != null) {
+                            httpResponse.Headers.Add("Access-Control-Allow-Origin", originString);
+                            httpResponse.Headers.Add("Access-Control-Allow-Credentials", "true");
+                        }
                     }
                 }
             }
