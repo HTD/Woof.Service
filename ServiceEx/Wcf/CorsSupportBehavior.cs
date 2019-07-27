@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
@@ -18,6 +19,14 @@ namespace Woof.ServiceEx.Wcf {
         /// </summary>
         public string[] AccessControlAllowOrigin { get; }
 
+        /// <summary>
+        /// Gets or sets value indicating whether passing cookies to the endpoint via CORS is allowed.
+        /// </summary>
+        public bool AccessControlAllowCredentials { get; }
+
+        /// <summary>
+        /// Custom extension used to indicate preflights.
+        /// </summary>
         private class PreflightDetected : IExtension<OperationContext> {
 
             private string _requestedHeaders = null;
@@ -65,13 +74,29 @@ namespace Woof.ServiceEx.Wcf {
 
         }
 
+        /// <summary>
+        /// Actual message inspector class.
+        /// </summary>
         private class CorsMessageInspector : IDispatchMessageInspector {
 
             /// <summary>
-            /// If set, the requests will be allowed only for origins specified, otherwise for all
+            /// Gets the assigned <see cref="CorsSupportBehavior"/>.
             /// </summary>
-            public string[] AccessControlAllowOrigin { get; set; }
+            private CorsSupportBehavior Behavior { get; }
 
+            /// <summary>
+            /// Assigns message inspector to base behavior.
+            /// </summary>
+            /// <param name="behavior">Base <see cref="CorsSupportBehavior"/>.</param>
+            public CorsMessageInspector(CorsSupportBehavior behavior) => Behavior = behavior;
+
+            /// <summary>
+            /// Adds <see cref="PreflightDetected"/> extensions if HTTP request method is OPTIONS, invoked on each request.
+            /// </summary>
+            /// <param name="request">HTTP request.</param>
+            /// <param name="channel">Not used.</param>
+            /// <param name="instanceContext">Not used.</param>
+            /// <returns></returns>
             public object AfterReceiveRequest(ref Message request, IClientChannel channel, InstanceContext instanceContext) {
                 HttpRequestMessageProperty httpRequest = request.Properties["httpRequest"] as HttpRequestMessageProperty;
                 // Check if the client sent an "OPTIONS" request
@@ -80,6 +105,11 @@ namespace Woof.ServiceEx.Wcf {
                 return httpRequest;
             }
 
+            /// <summary>
+            /// Detects preflight responses, sends CORS headers.
+            /// </summary>
+            /// <param name="reply">Reply message.</param>
+            /// <param name="correlationState">Response message.</param>
             public void BeforeSendReply(ref Message reply, object correlationState) {
                 HttpRequestMessageProperty httpRequest = correlationState as HttpRequestMessageProperty;
                 HttpResponseMessageProperty httpResponse = null;
@@ -89,57 +119,51 @@ namespace Woof.ServiceEx.Wcf {
                     httpResponse = new HttpResponseMessageProperty();
                     reply.Properties[HttpResponseMessageProperty.Name] = httpResponse;
                     httpResponse.StatusCode = HttpStatusCode.OK;
-                } else if (reply.Properties.ContainsKey(HttpResponseMessageProperty.Name))
+                }
+                else if (reply.Properties.ContainsKey(HttpResponseMessageProperty.Name))
                     httpResponse = reply.Properties[HttpResponseMessageProperty.Name] as HttpResponseMessageProperty;
-
-                PreflightDetected preflightRequest = OperationContext.Current.Extensions.Find<PreflightDetected>();
-                if (preflightRequest != null) {
-                    // Add allow HTTP headers to respond to the preflight request
+                else return;
+                var preflightRequest = OperationContext.Current.Extensions.Find<PreflightDetected>();
+                if (preflightRequest != null) { // Add allow HTTP headers to respond to the preflight request
                     if (preflightRequest.RequestedHeaders == string.Empty)
                         httpResponse.Headers.Add("Access-Control-Allow-Headers", "Accept");
                     else
                         httpResponse.Headers.Add("Access-Control-Allow-Headers", preflightRequest.RequestedHeaders + ", Accept");
-
                     httpResponse.Headers.Add("Access-Control-Allow-Methods", "*");
                 }
-
                 // Add allow-origin header to each response message, because client expects it
                 // If AccessControlAllowOrigin is set to allowed origins array the request origin is tested against it
-                string originHeader = httpRequest.Headers["Origin"];
-                
-                string originString = null;
-                if (httpResponse != null) {
-                    if (AccessControlAllowOrigin == null || String.IsNullOrEmpty(originHeader) || originHeader == "null") {
-                        httpResponse.Headers.Add("Access-Control-Allow-Origin", "*");
-                    } else {
-                        foreach (var i in AccessControlAllowOrigin) if (i == "*" || originHeader == i) { originString = i; break; }
-                        if (originString == null) {
-                            httpResponse.StatusCode = HttpStatusCode.Forbidden;
-                            httpResponse.StatusDescription = "Origin not allowed";
-                        }
-                        else if (httpResponse != null) {
-                            httpResponse.Headers.Add("Access-Control-Allow-Origin", originString);
-                            httpResponse.Headers.Add("Access-Control-Allow-Credentials", "true");
-                        }
-                    }
+                var originHeader = httpRequest.Headers["Origin"];
+                if (Behavior.AccessControlAllowOrigin == null || String.IsNullOrEmpty(originHeader) || originHeader == "null") return;
+                var matchedOrigin = Behavior.AccessControlAllowOrigin.FirstOrDefault(i => i.Equals(originHeader, StringComparison.OrdinalIgnoreCase) || i == "*");
+                if (matchedOrigin == null) {
+                    httpResponse.StatusCode = HttpStatusCode.Forbidden;
+                    httpResponse.StatusDescription = "Origin not allowed";
+                }
+                else if (httpResponse != null) {
+                    httpResponse.Headers.Add("Access-Control-Allow-Origin", matchedOrigin);
+                    httpResponse.Headers.Add("Access-Control-Allow-Credentials", Behavior.AccessControlAllowCredentials.ToString().ToLower());
                 }
             }
-        }
 
-        private CorsMessageInspector MessageInspector { get; } = new CorsMessageInspector();
+        }
 
         /// <summary>
         /// Creates CORS support behavior for specified one or more origins (separated with semicolon).
         /// </summary>
         /// <param name="origins">One or more origins separated with semicolon and optional white space.</param>
-        public CorsSupportBehavior(string origins = "*") => AccessControlAllowOrigin = RxOriginSeparator.Split(origins);
+        /// <param name="allowCredentials">If set true, authentication cookie can be passed to the service.</param>
+        public CorsSupportBehavior(string origins = null, bool allowCredentials = false) {
+            AccessControlAllowOrigin = RxOriginSeparator.Split(origins);
+            AccessControlAllowCredentials = allowCredentials;
+        }
 
         /// <summary>
         /// Empty.
         /// </summary>
         /// <param name="endpoint"></param>
         /// <param name="bindingParameters"></param>
-        public void AddBindingParameters(ServiceEndpoint endpoint, System.ServiceModel.Channels.BindingParameterCollection bindingParameters) { }
+        public void AddBindingParameters(ServiceEndpoint endpoint, BindingParameterCollection bindingParameters) { }
 
         /// <summary>
         /// Empty.
@@ -154,7 +178,7 @@ namespace Woof.ServiceEx.Wcf {
         /// <param name="endpoint">End point.</param>
         /// <param name="endpointDispatcher">Dispatcher.</param>
         public void ApplyDispatchBehavior(ServiceEndpoint endpoint, EndpointDispatcher endpointDispatcher) {
-            endpointDispatcher.DispatchRuntime.MessageInspectors.Add(new CorsMessageInspector() { AccessControlAllowOrigin = AccessControlAllowOrigin });
+            endpointDispatcher.DispatchRuntime.MessageInspectors.Add(new CorsMessageInspector(this));
             IOperationInvoker invoker = endpointDispatcher.DispatchRuntime.UnhandledDispatchOperation.Invoker;
             endpointDispatcher.DispatchRuntime.UnhandledDispatchOperation.Invoker = new CustomOperationInvoker(invoker);
         }

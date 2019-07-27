@@ -147,12 +147,10 @@ namespace Woof.ServiceEx {
         }
 
         /// <summary>
-        /// Handles uninstall options
+        /// Handles uninstall options.
         /// </summary>
-        /// <returns></returns>
         void Uninstall() {
             var eventSource = ServiceState.Configuration.DisplayName;
-            var eventLog = ServiceState.Configuration.Company;
             if (EventLog.SourceExists(eventSource)) {
                 EventLog.DeleteEventSource(eventSource);
                 Console.WriteLine(Messages.RestartAdvised);

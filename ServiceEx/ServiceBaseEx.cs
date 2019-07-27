@@ -60,7 +60,6 @@ namespace Woof.ServiceEx {
         /// <param name="eventId">Event identifier. Set to zero if unsure.</param>
         /// <param name="message">Event message text.</param>
         public void WriteEvent(char severity, int eventId, string message) {
-            var messageId = $"{severity}{eventId}";
             var entryType = severity == 'E' ? EventLogEntryType.Error : (severity == 'W' ? EventLogEntryType.Warning : EventLogEntryType.Information);
             EventLog.WriteEvent(new EventDefinition { Id = eventId, Message = message, Type = entryType });
         }

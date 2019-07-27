@@ -25,21 +25,12 @@ namespace Woof.ServiceEx.Wcf {
         public int MaxReceivedMessageSize { get; set; } = 524288;
 
         /// <summary>
-        /// Gets one or more origins allowed with CORS support behavior defined in the host constructor.
-        /// </summary>
-        public string AllowOrigins { get; }
-
-        /// <summary>
         /// Creates new <see cref="WebServiceHost"/> instance.
         /// </summary>
-        /// <param name="endpointUri">Endpoint URI.</param>
+        /// <param name="baseAddresses">Base addresses.</param>
         /// <param name="allowOrigins">One or more origins separated with a semicolon and optional whitespace.</param>
-        public WebServiceHost(Uri endpointUri, string allowOrigins = "*") : base(typeof(T), new[] { endpointUri }) => AllowOrigins = allowOrigins;
-
-        /// <summary>
-        /// Configures service endpoint and adds special behaviors to it (WebHttp and CorsSupport).
-        /// </summary>
-        protected override void OnOpening() {
+        /// <param name="allowCredentials">If set true, authentication cookie can be passed to the service.</param>
+        public WebServiceHost(Uri[] baseAddresses, string allowOrigins = null, bool allowCredentials = false) : base(typeof(T), baseAddresses) {
             var securityMode = BaseAddresses.FirstOrDefault().Scheme == "https" ? WebHttpSecurityMode.Transport : WebHttpSecurityMode.None;
             var receiveTimeout = new TimeSpan(1, 0, 0);
             var defaultWebHttpBehavior = new WebHttpBehavior() {
@@ -59,11 +50,18 @@ namespace Woof.ServiceEx.Wcf {
                 new EndpointAddress(BaseAddresses.FirstOrDefault())
             );
             endPoint.EndpointBehaviors.Add(defaultWebHttpBehavior);
-            endPoint.EndpointBehaviors.Add(new CorsSupportBehavior(AllowOrigins));
+            if (allowOrigins != null) endPoint.EndpointBehaviors.Add(new CorsSupportBehavior(allowOrigins, allowCredentials));
             endPoint.EndpointBehaviors.Add(new BrowserCompatibilityBehavior());
             AddServiceEndpoint(endPoint);
-            base.OnOpening();
         }
+
+        /// <summary>
+        /// Creates new <see cref="WebServiceHost"/> instance.
+        /// </summary>
+        /// <param name="baseAddress">Base address.</param>
+        /// <param name="allowOrigins">One or more origins separated with a semicolon and optional whitespace.</param>
+        /// <param name="allowCredentials">If set true, authentication cookie can be passed to the service.</param>
+        public WebServiceHost(Uri baseAddress, string allowOrigins = null, bool allowCredentials = false) : this(new[] { baseAddress }, allowOrigins, allowCredentials) { }
 
     }
 
