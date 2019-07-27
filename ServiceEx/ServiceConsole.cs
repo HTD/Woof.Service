@@ -6,7 +6,6 @@ using System.IO;
 using System.Reflection;
 using System.ServiceProcess;
 using System.Text;
-using System.Windows.Forms;
 using Woof.ConsoleEx;
 
 namespace Woof.ServiceEx {
@@ -56,7 +55,7 @@ namespace Woof.ServiceEx {
                     Messages.InstallerHelp,
                     ServiceState.Configuration.DisplayName,
                     ServiceState.Configuration.Description,
-                    Path.GetFileName(Application.ExecutablePath)
+                    Path.GetFileName(Assembly.GetEntryAssembly().Location)
                 );
 
         /// <summary>
