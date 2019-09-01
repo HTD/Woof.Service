@@ -17,9 +17,9 @@ namespace Woof.ServiceEx {
         public static ServiceBaseEx Instance { get; private set; }
 
         /// <summary>
-        /// Gets the <see cref="ResourceManager"/> object assigned to the service in constructor.
+        /// Gets the resource managers assigned to the service in constructor.
         /// </summary>
-        public ResourceManager Resources { get; }
+        public ResourceManager[] Resources { get; }
 
         /// <summary>
         /// Service class constructor
@@ -36,8 +36,19 @@ namespace Woof.ServiceEx {
         /// <summary>
         /// Constructs service class assigning resources for event messages.
         /// </summary>
-        /// <param name="resourceManager"><see cref="ResourceManager"/> instance.</param>
-        protected ServiceBaseEx(ResourceManager resourceManager) : this() => Resources = resourceManager;
+        /// <param name="resources">One or more <see cref="ResourceManager"/> instance.</param>
+        protected ServiceBaseEx(params ResourceManager[] resources) : this() => Resources = resources;
+
+        /// <summary>
+        /// Tries to get a string from the configured resources.
+        /// If not found, the message identifier itself is returned.
+        /// </summary>
+        /// <param name="messageId">Message identifier (resource name).</param>
+        /// <returns>Resource string or message identifier.</returns>
+        private string GetResourceString(string messageId) {
+            foreach (var res in Resources) if (res.GetString(messageId) is string s) return s;
+            return messageId;
+        }
 
         /// <summary>
         /// Signals operation result, warning or error in service EventLog entry.
@@ -47,9 +58,9 @@ namespace Woof.ServiceEx {
         /// <param name="args">Optional arguments for message interpolation.</param>
         public void Signal(char severity, int eventId, params object[] args) {
             var messageId = $"{severity}{eventId}";
-            var message = Resources.GetString(messageId);
+            var message = GetResourceString(messageId);
             var entryType = severity == 'E' ? EventLogEntryType.Error : (severity == 'W' ? EventLogEntryType.Warning : EventLogEntryType.Information);
-            if (args != null && args.Length > 0) message = message != null ? string.Format(message, args) : args[0].ToString();
+            if (message.Contains("{0}") && args != null && args.Length > 0) message = string.Format(message, args);
             EventLog.WriteEvent(new EventDefinition { Id = eventId, Message = message, Type = entryType });
         }
 

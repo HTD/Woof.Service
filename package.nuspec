@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>Woof.Service</id>
-    <version>2.0.0</version>
+    <version>2.1.0</version>
     <title>Woof.Service</title>
     <authors>Adam Łyskawa</authors>
     <owners>CodeDog Ltd</owners>
@@ -10,7 +10,9 @@
     <projectUrl>https://github.com/HTD/Woof.Service</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Windows Service made easy.</description>
-    <releaseNotes>Removed WCF (use Woof.Net package instead). Removed many dependencies. Fixed dependency conflict with Woof.Core 2.x.</releaseNotes>
+    <releaseNotes>ADD: Multiple resource managers support.
+FIX: NullReferenceException when resource not found.
+FIX: FormatException when resource string does not contain {0} marker.</releaseNotes>
     <copyright>(c)2018 by CodeDog Ltd.</copyright>
     <tags>code codedog dotnet system windows service cors rest wcf</tags>
   </metadata>
