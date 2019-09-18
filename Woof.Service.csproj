@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Woof</RootNamespace>
     <AssemblyName>Woof.Service</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -39,8 +39,8 @@
     <Reference Include="Woof.Console, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\Woof.Console.2.0.0\lib\netstandard2.0\Woof.Console.dll</HintPath>
     </Reference>
-    <Reference Include="Woof.Core, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\Woof.Core.2.0.0\lib\netstandard2.0\Woof.Core.dll</HintPath>
+    <Reference Include="Woof.Core, Version=2.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Woof.Core.2.2.0\lib\netstandard2.0\Woof.Core.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
